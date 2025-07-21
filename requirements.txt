@@ -2,3 +2,6 @@ pyTelegramBotAPI
 requests
 pytz
 jdatetime
+beautifulsoup4
+lxml
+aiohttp
