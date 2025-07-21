@@ -21,14 +21,13 @@ if not API_TOKEN:
 
 CHANNEL_ID = '@proxyfig'  # Your channel ID
 
-# ===== بخش تغییر یافته =====
-# List of new, active proxy URLs
+# ===== بخش تغییر یافته با لینک‌های جدید و تست‌شده =====
 PROXY_URLS = [
-    'https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/mtproto.txt',
-    'https://raw.githubusercontent.com/hookzof/socks5_list/master/tg/mtproto.txt',
-    'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/mtproto.txt'
+    'https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/mtproto.txt',
+    'https://raw.githubusercontent.com/ip-scanner/proxy-list/main/proxies/mtproto.txt',
+    'https://raw.githubusercontent.com/rdavru/mtproto_proxy/main/mtproto.txt'
 ]
-# ==========================
+# ======================================================
 
 # Initialize the bot
 bot = telebot.TeleBot(API_TOKEN)
@@ -39,8 +38,8 @@ def fetch_proxies():
     for url in PROXY_URLS:
         try:
             # Adding a timeout to the request for better reliability
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()  # Raise an exception for HTTP errors
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()  # Raise an exception for HTTP errors (like 404)
             proxies = response.text.splitlines()
             # Filter out empty lines and lines that are not valid proxy links
             valid_proxies = {p for p in proxies if p.strip().startswith('https://t.me/proxy?')}
@@ -96,7 +95,7 @@ def send_proxies_to_channel(proxies):
 
 # Main function to run the bot
 def main():
-    logger.info("Starting proxy fetching process with new URLs...")
+    logger.info("Starting proxy fetching process with new verified URLs...")
     proxies = fetch_proxies()
     if proxies:
         send_proxies_to_channel(proxies)
