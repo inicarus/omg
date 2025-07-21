@@ -19,13 +19,16 @@ if not API_TOKEN:
     logger.error("API_TOKEN not found in environment variables!")
     exit()
 
-CHANNEL_ID = '@proxyfig'  # Your new channel ID
-# List of new proxy URLs
+CHANNEL_ID = '@proxyfig'  # Your channel ID
+
+# ===== بخش تغییر یافته =====
+# List of new, active proxy URLs
 PROXY_URLS = [
-    'https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/mtproto',
-    'https://raw.githubusercontent.com/ip-scanner/proxy-list/main/proxies/mtproto.txt',
-    'https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/mtproto.txt'
+    'https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/mtproto.txt',
+    'https://raw.githubusercontent.com/hookzof/socks5_list/master/tg/mtproto.txt',
+    'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/mtproto.txt'
 ]
+# ==========================
 
 # Initialize the bot
 bot = telebot.TeleBot(API_TOKEN)
@@ -35,11 +38,12 @@ def fetch_proxies():
     all_proxies = set()  # Use a set to automatically handle duplicates
     for url in PROXY_URLS:
         try:
-            response = requests.get(url)
+            # Adding a timeout to the request for better reliability
+            response = requests.get(url, timeout=10)
             response.raise_for_status()  # Raise an exception for HTTP errors
             proxies = response.text.splitlines()
-            # Filter out empty lines and specific unwanted lines
-            valid_proxies = {p for p in proxies if p.strip() and p.startswith('https://t.me/proxy?')}
+            # Filter out empty lines and lines that are not valid proxy links
+            valid_proxies = {p for p in proxies if p.strip().startswith('https://t.me/proxy?')}
             all_proxies.update(valid_proxies)
             logger.info(f"Fetched {len(valid_proxies)} valid proxies from {url}.")
         except requests.RequestException as e:
@@ -71,7 +75,6 @@ def send_message_with_buttons(proxies):
             button = InlineKeyboardButton(text=button_text, url=proxy)
             buttons.append(button)
         
-        # Adding buttons to markup
         markup.add(*buttons)
     
     bot.send_message(CHANNEL_ID, text, reply_markup=markup, parse_mode="Markdown")
@@ -85,7 +88,6 @@ def send_proxies_to_channel(proxies):
         if batch:
             try:
                 send_message_with_buttons(batch)
-                # Delay between messages to avoid hitting Telegram API limits
                 if i + batch_size < len(proxies):
                     logger.info("Waiting for 10 seconds before sending the next batch...")
                     time.sleep(10)
@@ -94,7 +96,7 @@ def send_proxies_to_channel(proxies):
 
 # Main function to run the bot
 def main():
-    logger.info("Starting proxy fetching process...")
+    logger.info("Starting proxy fetching process with new URLs...")
     proxies = fetch_proxies()
     if proxies:
         send_proxies_to_channel(proxies)
